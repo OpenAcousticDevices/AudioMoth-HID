@@ -75,8 +75,8 @@ audiomoth.getPacket(function (err, packet) {
 ```
 
 ### Example applications using this module ###
-* [AudioMoth Configuration App](https://github.com/OpenAcousticDevices)
-* [AudioMoth Timesetter](https://github.com/OpenAcousticDevices)
+* [AudioMoth Configuration App](https://github.com/OpenAcousticDevices/AudioMoth-Config-App)
+* [AudioMoth Timesetter](https://github.com/OpenAcousticDevices/AudioMoth-TimeSetter)
 
 ### License ###
 
