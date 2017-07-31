@@ -1,0 +1,29 @@
+{
+  "author": {
+    "name": "openacousticdevices.info"
+  },
+  "repository": {
+  	"type" : "git",
+  	"url" : "https://github.com/OpenAcousticDevices/audiomoth-hid"
+  },
+  "dependencies": {},
+  "description": "AudioMoth USB interaction module.",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "main": "audiomoth-hid.js",
+  "maintainers": [
+    {
+      "name": "alex__rogers",
+      "email": "alex.rogers@cs.ox.ac.uk"
+    },
+    {
+      "name": "pcp1g11",
+      "email": "pcp1g11@soton.ac.uk"
+    }
+  ],
+  "name": "audiomoth-hid",
+  "optionalDependencies": {},
+  "scripts": {},
+  "version": "1.0.15"
+}
