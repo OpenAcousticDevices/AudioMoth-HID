@@ -30,7 +30,11 @@ exports.version = pckg.version;
 var executable = 'usbhidtool-macOS';
 
 if (process.platform === 'win32') {
-    executable = 'usbhidtool-windows';
+	if(process.arch === 'ia32') {
+		executable = 'usbhidtool-windows32'
+	} else {
+		executable = 'usbhidtool-windows';
+	}
 }
 
 if (process.platform === 'linux') {
