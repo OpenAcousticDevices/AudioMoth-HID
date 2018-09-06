@@ -18,6 +18,7 @@ var USB_MSG_TYPE_GET_UID = 0x03;
 var USB_MSG_TYPE_GET_BATTERY = 0x04;
 var USB_MSG_TYPE_GET_APP_PACKET = 0x05;
 var USB_MSG_TYPE_SET_APP_PACKET = 0x06;
+var USB_MSG_TYPE_GET_FIRMWARE_VERSION = 0x07;
 
 var VENDORID = 0x10c4;
 var PRODUCTID = 0x0002;
@@ -30,11 +31,11 @@ exports.version = pckg.version;
 var executable = 'usbhidtool-macOS';
 
 if (process.platform === 'win32') {
-	if(process.arch === 'ia32') {
-		executable = 'usbhidtool-windows32'
-	} else {
-		executable = 'usbhidtool-windows';
-	}
+    if(process.arch === 'ia32') {
+        executable = 'usbhidtool-windows32'
+    } else {
+        executable = 'usbhidtool-windows';
+    }
 }
 
 if (process.platform === 'linux') {
@@ -103,6 +104,24 @@ function convertOneByteFromBufferToBatteryState(buffer, offset) {
 
 }
 
+function convertThreeBytesFromBufferToFirmwareVersion(buffer, offset) {
+
+    var major, minor, patch;
+
+    major = buffer[offset];
+    minor = buffer[offset + 1];
+    patch = buffer[offset + 2];
+
+    if (major === 0) {
+
+        return "≤ 1.2.0";
+
+    }
+
+    return major + "." + minor + "." + patch;
+
+}
+
 exports.convertFourBytesFromBufferToDate = convertFourBytesFromBufferToDate;
 
 exports.convertDateToFourBytesInBuffer = convertDateToFourBytesInBuffer;
@@ -110,6 +129,8 @@ exports.convertDateToFourBytesInBuffer = convertDateToFourBytesInBuffer;
 exports.convertEightBytesFromBufferToID = convertEightBytesFromBufferToID;
 
 exports.convertOneByteFromBufferToBatteryState = convertOneByteFromBufferToBatteryState;
+
+exports.convertThreeBytesFromBufferToFirmwareVersion = convertThreeBytesFromBufferToFirmwareVersion;
 
 /* Main device functions */
 
@@ -214,6 +235,14 @@ exports.getBatteryState = function (callback) {
     var buffer = [0x00, USB_MSG_TYPE_GET_BATTERY];
 
     writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_BATTERY, convertOneByteFromBufferToBatteryState, callback));
+
+};
+
+exports.getFirmwareVersion = function (callback) {
+
+    var buffer = [0x00, USB_MSG_TYPE_GET_FIRMWARE_VERSION];
+
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_FIRMWARE_VERSION, convertThreeBytesFromBufferToFirmwareVersion, callback));
 
 };
 
