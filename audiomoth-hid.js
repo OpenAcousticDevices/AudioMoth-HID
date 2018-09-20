@@ -19,9 +19,12 @@ var USB_MSG_TYPE_GET_BATTERY = 0x04;
 var USB_MSG_TYPE_GET_APP_PACKET = 0x05;
 var USB_MSG_TYPE_SET_APP_PACKET = 0x06;
 var USB_MSG_TYPE_GET_FIRMWARE_VERSION = 0x07;
+var USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION = 0x08;
 
 var VENDORID = 0x10c4;
 var PRODUCTID = 0x0002;
+
+var FIRMWARE_DESCRIPTION_LENGTH = 32;
 
 var pckg = require('./package.json');
 exports.version = pckg.version;
@@ -106,19 +109,29 @@ function convertOneByteFromBufferToBatteryState(buffer, offset) {
 
 function convertThreeBytesFromBufferToFirmwareVersion(buffer, offset) {
 
-    var major, minor, patch;
+    return [buffer[offset], buffer[offset + 1], buffer[offset + 2]];
 
-    major = buffer[offset];
-    minor = buffer[offset + 1];
-    patch = buffer[offset + 2];
+}
 
-    if (major === 0) {
+function convertBytesFromBufferToFirmwareDescription(buffer, offset) {
 
-        return "≤ 1.2.0";
+    var descriptionChar, descriptionStr = "";
+
+    for (var i = 0; i < FIRMWARE_DESCRIPTION_LENGTH; i++) {
+
+        descriptionChar = String.fromCharCode(buffer[offset + i]);
+
+        if (descriptionChar === "\u0000") {
+
+            break;
+
+        }
+
+        descriptionStr += descriptionChar;
 
     }
 
-    return major + "." + minor + "." + patch;
+    return descriptionStr;
 
 }
 
@@ -131,6 +144,8 @@ exports.convertEightBytesFromBufferToID = convertEightBytesFromBufferToID;
 exports.convertOneByteFromBufferToBatteryState = convertOneByteFromBufferToBatteryState;
 
 exports.convertThreeBytesFromBufferToFirmwareVersion = convertThreeBytesFromBufferToFirmwareVersion;
+
+exports.convertBytesFromBufferToFirmwareDescription = convertBytesFromBufferToFirmwareDescription;
 
 /* Main device functions */
 
@@ -245,6 +260,15 @@ exports.getFirmwareVersion = function (callback) {
     writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_FIRMWARE_VERSION, convertThreeBytesFromBufferToFirmwareVersion, callback));
 
 };
+
+exports.getFirmwareDescription = function (callback) {
+
+    var buffer = [0x00, USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION];
+
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION, convertBytesFromBufferToFirmwareDescription, callback));
+
+};
+
 
 exports.getPacket = function (callback) {
 
