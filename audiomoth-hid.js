@@ -115,9 +115,9 @@ function convertThreeBytesFromBufferToFirmwareVersion(buffer, offset) {
 
 function convertBytesFromBufferToFirmwareDescription(buffer, offset) {
 
-    var descriptionChar, descriptionStr = "";
+    var i, descriptionChar, descriptionStr = "";
 
-    for (var i = 0; i < FIRMWARE_DESCRIPTION_LENGTH; i++) {
+    for (i = 0; i < FIRMWARE_DESCRIPTION_LENGTH; i++) {
 
         descriptionChar = String.fromCharCode(buffer[offset + i]);
 
