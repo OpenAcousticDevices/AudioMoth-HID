@@ -35,7 +35,7 @@ audiomoth.getBatteryState(function (err, batteryState) {
 ```
 
 ---
-Send arbitrary packet of max length 62 (message limit of 64 bytes, 2 bytes required for message identification) :
+Send application packet of max length 62 (message limit of 64 bytes, 2 bytes required for message identification) :
 ```
 var packet = new Uint8Array(62);
 ```
@@ -66,11 +66,27 @@ audiomoth.setPacket(packet, function (err, packet) {
 ```
 
 ---
-Obtain arbitrary packet set in AudioMoth firmware:
+Get application packet set in AudioMoth firmware:
 ```
 audiomoth.getPacket(function (err, packet) {
 	console.log("Data returned from application specific packet: " + packet);
 	audiomoth.convertFourBytesFromBufferToDate(packet, 1);
+});
+```
+
+---
+Get firmware version set in AudioMoth firmware:
+```
+audiomoth.getFirmwareVersion(function (err, firmwareVersion) {
+    console.log("Attached device's firmware version: " + firmwareVersion);
+});
+```
+
+---
+Get firmware description set in AudioMoth firmware:
+```
+audiomoth.getFirmwareDescription(function (err, firmwareDescription) {
+    console.log("Attached device's firmware description: " + firmwareDescription);
 });
 ```
 
