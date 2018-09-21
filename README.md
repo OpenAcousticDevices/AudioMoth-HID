@@ -92,8 +92,7 @@ audiomoth.getFirmwareDescription(function (err, firmwareDescription) {
 
 ### Linux ###
 
-The module will work as is on macOS and Windows. However, Linux prevents USB HID devices from being writable by default. This can be fixed by adding an additional rule in /lib/udev/rules.d/. For AudioMoth, the following additional rule file, called 99-audiomoth.rules, is used. The content of which is:
-
+The module will work as is on macOS and Windows. However, Linux prevents USB HID devices from being writable by default. This can be fixed by navigating to /lib/udev/rules.d/ and adding a file called 99-audiomoth.rules. The content of this file should by:
 ```
 SUBSYSTEM=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="0002", MODE="0666"
 ```
