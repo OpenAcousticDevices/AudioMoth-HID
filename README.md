@@ -1,7 +1,7 @@
 # AudioMoth-HID #
-A Node.js library for interfacing with AudioMoth devices over USB. The module is hosted on npmn 
+A Node.js library for interfacing with AudioMoth devices over USB. The module is hosted on npm under the name 'audiomoth-hid'.
 
-### Usage ###\
+### Usage ###
 
 The module should be imported as normal:
 ```
