@@ -1,9 +1,14 @@
 # AudioMoth-HID #
-A Node.js library for interfacing with AudioMoth devices over USB.
+A Node.js library for interfacing with AudioMoth devices over USB. The module is hosted on npmn 
 
-### Usage ###
+### Usage ###\
 
-Obtain the time used by the onboard clock:
+The module should be imported as normal:
+```
+var audiomoth = require('audiomoth-hid');
+```
+
+Asynchronous function calls then provide access to its functionality. To obtain the time used by the onboard clock:
 ```
 audiomoth.getTime(function (err, date) {
 	console.log("Time/date on device: " + date);
