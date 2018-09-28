@@ -98,8 +98,8 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="0002", MODE="0666"
 ```
 
 ### Example applications using this module ###
-* [AudioMoth Configuration App](https://github.com/OpenAcousticDevices/AudioMoth-Config-App)
-* [AudioMoth Timesetter](https://github.com/OpenAcousticDevices/AudioMoth-TimeSetter)
+* [AudioMoth Configuration App](https://github.com/OpenAcousticDevices/AudioMoth-Configuration-App)
+* [AudioMoth Time App](https://github.com/OpenAcousticDevices/AudioMoth-Time-App)
 
 ### License ###
 
