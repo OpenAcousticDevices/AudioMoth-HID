@@ -269,7 +269,6 @@ exports.getFirmwareDescription = function (callback) {
 
 };
 
-
 exports.getPacket = function (callback) {
 
     var buffer = [0x00, USB_MSG_TYPE_GET_APP_PACKET];
