@@ -17,7 +17,8 @@ audiomoth.getTime(function (err, date) {
 
 ---
 Set the onboard clock with a `Date()` object:
-```
+
+```javascript
 audiomoth.setTime(new Date(), function (err, date) {
 	console.log("New time/date of device: " + date);
 });
