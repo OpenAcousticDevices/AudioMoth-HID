@@ -20,6 +20,7 @@ var USB_MSG_TYPE_GET_APP_PACKET = 0x05;
 var USB_MSG_TYPE_SET_APP_PACKET = 0x06;
 var USB_MSG_TYPE_GET_FIRMWARE_VERSION = 0x07;
 var USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION = 0x08;
+var USB_MSG_TYPE_SWITCH_TO_BOOTLOADER = 0x09;
 
 var VENDORID = 0x10c4;
 var PRODUCTID = 0x0002;
@@ -292,3 +293,11 @@ exports.setPacket = function (packet, callback) {
     writeToDevice(buffer, callback);
 
 };
+
+exports.switchToBootloader = function (callback) {
+
+    var buffer = [0x00, USB_MSG_TYPE_SWITCH_TO_BOOTLOADER];
+
+    writeToDevice(buffer, callback);
+
+}

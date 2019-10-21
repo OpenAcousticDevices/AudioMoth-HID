@@ -108,6 +108,22 @@ audiomoth.getFirmwareDescription(function (err, firmwareDescription) {
 });
 ```
 
+---
+
+Switch AudioMoth to bootloader for flashing:
+
+```javascript
+audiomoth.switchToBootloader(function (err, packet) {
+    if (packet[0] === 0x09) {
+        if (packet[1] === 0x01) {
+            console.log("Attached device switching to bootloader.");
+        } else {
+            console.error("Attached device's firmware does not support bootloader switching over HID.");
+        }
+    }
+});
+```
+
 ### Linux ###
 
 The module will work as is on macOS and Windows. However, Linux prevents USB HID devices from being writable by default. This can be fixed by navigating to /lib/udev/rules.d/ and adding a file called 99-audiomoth.rules. The content of this file should by:
