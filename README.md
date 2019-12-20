@@ -110,11 +110,23 @@ audiomoth.getFirmwareDescription(function (err, firmwareDescription) {
 
 ---
 
+Query AudioMoth to see if it supports switching to bootloader with a USB command:
+
+```javascript
+audiomoth.queryBootloader(function (err, supportsBootloaderSwitch) {
+    if (supportsBootloaderSwitch) {
+        console.log("Attached device's firmware supports bootloader switching over HID.");
+    } else {
+        console.error("Attached device's firmware does not support bootloader switching over HID.");
+    }
+});
+```
+
 Switch AudioMoth to bootloader for flashing:
 
 ```javascript
 audiomoth.switchToBootloader(function (err, packet) {
-    if (packet[0] === 0x09) {
+    if (packet[0] === 0x0A) {
         if (packet[1] === 0x01) {
             console.log("Attached device switching to bootloader.");
         } else {

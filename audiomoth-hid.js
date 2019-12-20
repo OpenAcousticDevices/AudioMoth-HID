@@ -20,7 +20,8 @@ var USB_MSG_TYPE_GET_APP_PACKET = 0x05;
 var USB_MSG_TYPE_SET_APP_PACKET = 0x06;
 var USB_MSG_TYPE_GET_FIRMWARE_VERSION = 0x07;
 var USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION = 0x08;
-var USB_MSG_TYPE_SWITCH_TO_BOOTLOADER = 0x09;
+var USB_MSG_TYPE_QUERY_BOOTLOADER = 0x09;
+var USB_MSG_TYPE_SWITCH_TO_BOOTLOADER = 0x0A;
 
 var VENDORID = 0x10c4;
 var PRODUCTID = 0x0002;
@@ -136,6 +137,12 @@ function convertBytesFromBufferToFirmwareDescription(buffer, offset) {
 
 }
 
+function convertOneByteFromBufferToBootloaderQuery(buffer, offset) {
+
+    return (buffer[offset] === 0x01);
+
+}
+
 exports.convertFourBytesFromBufferToDate = convertFourBytesFromBufferToDate;
 
 exports.convertDateToFourBytesInBuffer = convertDateToFourBytesInBuffer;
@@ -147,6 +154,8 @@ exports.convertOneByteFromBufferToBatteryState = convertOneByteFromBufferToBatte
 exports.convertThreeBytesFromBufferToFirmwareVersion = convertThreeBytesFromBufferToFirmwareVersion;
 
 exports.convertBytesFromBufferToFirmwareDescription = convertBytesFromBufferToFirmwareDescription;
+
+exports.convertOneByteFromBufferToBootloaderQuery = convertOneByteFromBufferToBootloaderQuery;
 
 /* Main device functions */
 
@@ -301,3 +310,11 @@ exports.switchToBootloader = function (callback) {
     writeToDevice(buffer, callback);
 
 }
+
+exports.queryBootloader = function (callback) {
+
+    var buffer = [0x00, USB_MSG_TYPE_QUERY_BOOTLOADER];
+
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_QUERY_BOOTLOADER, convertOneByteFromBufferToBootloaderQuery, callback));
+
+};
