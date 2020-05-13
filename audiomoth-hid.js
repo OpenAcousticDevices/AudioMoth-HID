@@ -100,7 +100,7 @@ function convertOneByteFromBufferToBatteryState(buffer, offset) {
 
     if (batteryState === 15) {
 
-        return "> 5.0V";
+        return "> 4.9V";
 
     }
 
