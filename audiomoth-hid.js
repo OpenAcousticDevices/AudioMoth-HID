@@ -69,7 +69,7 @@ function convertFourBytesFromBufferToDate(buffer, offset) {
 
 function convertDateToFourBytesInBuffer(buffer, offset, date) {
 
-    var unixTimeStamp = date.valueOf() / 1000;
+    var unixTimeStamp = Math.round(date.valueOf() / 1000);
 
     buffer[offset + 3] = (unixTimeStamp >> 24) & 0xFF;
     buffer[offset + 2] = (unixTimeStamp >> 16) & 0xFF;
