@@ -144,6 +144,10 @@ The module will work as is on macOS and Windows. However, Linux prevents USB HID
 SUBSYSTEM=="usb", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="0002", MODE="0666"
 ```
 
+### Updating module ###
+
+Execution permissions are lost when binaries are committed to npm repository from a Windows machine. To avoid this, all updates must be published from MacOS.
+
 ### Example applications using this module ###
 * [AudioMoth Configuration App](https://github.com/OpenAcousticDevices/AudioMoth-Configuration-App)
 * [AudioMoth Time App](https://github.com/OpenAcousticDevices/AudioMoth-Time-App)
