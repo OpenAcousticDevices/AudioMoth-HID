@@ -8,27 +8,32 @@
 
 /*jslint bitwise: true, nomen: true*/
 
-var fs = require('fs');
-var path = require('path');
-var child_process = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const child_process = require('child_process');
 
-var USB_MSG_TYPE_GET_TIME = 0x01;
-var USB_MSG_TYPE_SET_TIME = 0x02;
-var USB_MSG_TYPE_GET_UID = 0x03;
-var USB_MSG_TYPE_GET_BATTERY = 0x04;
-var USB_MSG_TYPE_GET_APP_PACKET = 0x05;
-var USB_MSG_TYPE_SET_APP_PACKET = 0x06;
-var USB_MSG_TYPE_GET_FIRMWARE_VERSION = 0x07;
-var USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION = 0x08;
-var USB_MSG_TYPE_QUERY_BOOTLOADER = 0x09;
-var USB_MSG_TYPE_SWITCH_TO_BOOTLOADER = 0x0A;
+const USB_MSG_TYPE_GET_TIME = 0x01;
+const USB_MSG_TYPE_SET_TIME = 0x02;
+const USB_MSG_TYPE_GET_UID = 0x03;
+const USB_MSG_TYPE_GET_BATTERY = 0x04;
+const USB_MSG_TYPE_GET_APP_PACKET = 0x05;
+const USB_MSG_TYPE_SET_APP_PACKET = 0x06;
+const USB_MSG_TYPE_GET_FIRMWARE_VERSION = 0x07;
+const USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION = 0x08;
+const USB_MSG_TYPE_QUERY_SERIAL_BOOTLOADER = 0x09;
+const USB_MSG_TYPE_ENTER_SERIAL_BOOTLOADER = 0x0A;
+const USB_MSG_TYPE_QUERY_USBHID_BOOTLOADER = 0x0B
+const USB_MSG_TYPE_ENTER_USBHID_BOOTLOADER = 0x0C
 
-var VENDORID = 0x10c4;
-var PRODUCTID = 0x0002;
+const VENDORID = 0x10c4;
+const PRODUCTID = 0x0002;
 
-var FIRMWARE_DESCRIPTION_LENGTH = 32;
+const AUDIOMOTH_PACKETSIZE = 62;
+const FULL_USB_HID_PACKETSIZE = 64;
 
-var pckg = require('./package.json');
+const FIRMWARE_DESCRIPTION_LENGTH = 32;
+
+const pckg = require('./package.json');
 exports.version = pckg.version;
 
 /* Generate command line instruction */
@@ -55,13 +60,13 @@ if (fs.existsSync(directory)) {
     directory = unpackedDirectory;
 }
 
-var command = '"' + path.join(directory, executable) + '" ' + VENDORID + ' ' + PRODUCTID + ' ';
+const command = '"' + path.join(directory, executable) + '" ' + VENDORID + ' ' + PRODUCTID + ' ';
 
 /* Exported conversion function */
 
 function convertFourBytesFromBufferToDate(buffer, offset) {
 
-    var unixTimestamp = (buffer[offset] & 0xFF) + ((buffer[offset + 1] & 0xFF) << 8) + ((buffer[offset + 2] & 0xFF) << 16) + ((buffer[offset + 3] & 0xFF) << 24);
+    const unixTimestamp = (buffer[offset] & 0xFF) + ((buffer[offset + 1] & 0xFF) << 8) + ((buffer[offset + 2] & 0xFF) << 16) + ((buffer[offset + 3] & 0xFF) << 24);
 
     return new Date(unixTimestamp * 1000);
 
@@ -69,7 +74,7 @@ function convertFourBytesFromBufferToDate(buffer, offset) {
 
 function convertDateToFourBytesInBuffer(buffer, offset, date) {
 
-    var unixTimeStamp = Math.round(date.valueOf() / 1000);
+    const unixTimeStamp = Math.round(date.valueOf() / 1000);
 
     buffer[offset + 3] = (unixTimeStamp >> 24) & 0xFF;
     buffer[offset + 2] = (unixTimeStamp >> 16) & 0xFF;
@@ -90,7 +95,7 @@ function convertEightBytesFromBufferToID(buffer, offset) {
 
 function convertOneByteFromBufferToBatteryState(buffer, offset) {
 
-    var batteryState = buffer[offset];
+    const batteryState = buffer[offset];
 
     if (batteryState === 0) {
 
@@ -117,11 +122,11 @@ function convertThreeBytesFromBufferToFirmwareVersion(buffer, offset) {
 
 function convertBytesFromBufferToFirmwareDescription(buffer, offset) {
 
-    var i, descriptionChar, descriptionStr = "";
+    let descriptionStr = "";
 
-    for (i = 0; i < FIRMWARE_DESCRIPTION_LENGTH; i++) {
+    for (let i = 0; i < FIRMWARE_DESCRIPTION_LENGTH; i++) {
 
-        descriptionChar = String.fromCharCode(buffer[offset + i]);
+        const descriptionChar = String.fromCharCode(buffer[offset + i]);
 
         if (descriptionChar === "\u0000") {
 
@@ -137,7 +142,7 @@ function convertBytesFromBufferToFirmwareDescription(buffer, offset) {
 
 }
 
-function convertOneByteFromBufferToBootloaderQuery(buffer, offset) {
+function convertOneByteFromBufferToBoolean(buffer, offset) {
 
     return (buffer[offset] === 0x01);
 
@@ -155,21 +160,19 @@ exports.convertThreeBytesFromBufferToFirmwareVersion = convertThreeBytesFromBuff
 
 exports.convertBytesFromBufferToFirmwareDescription = convertBytesFromBufferToFirmwareDescription;
 
-exports.convertOneByteFromBufferToBootloaderQuery = convertOneByteFromBufferToBootloaderQuery;
+exports.convertOneByteFromBufferToBoolean = convertOneByteFromBufferToBoolean;
 
 /* Main device functions */
 
 function writeToDevice(buffer, callback) {
 
-    var cmd = command + buffer.join(' ');
+    const cmd = command + buffer.join(' ');
 
     child_process.exec(cmd, function (error, stdout) {
 
-        var i, data, parseError = false;
-
         if (error) {
 
-            callback(new Error('Error calling usbhidtool'));
+            callback('Error calling usbhidtool');
 
         } else {
 
@@ -179,21 +182,23 @@ function writeToDevice(buffer, callback) {
 
             } else if (stdout.slice(0, 5) === 'ERROR') {
 
-                callback(new Error('Error reported by usbhidtool - ' + stdout.slice(7, stdout.length - 1)));
+                callback('Error reported by usbhidtool - ' + stdout.slice(7, stdout.length - 1));
 
             } else {
 
-                data = Array.from(stdout.split(" "), function (byte) {
+                let parseError = false;
+
+                const data = Array.from(stdout.split(" "), function (byte) {
                     return parseInt(byte, 16);
                 });
 
-                for (i = 0; i < data.length; i += 1) {
+                for (let i = 0; i < data.length; i += 1) {
                     parseError |= isNaN(data[i]);
                 }
 
                 if (parseError || data.length !== 64) {
 
-                    callback(new Error("Error parsing response from usbhidtool"));
+                    callback('Error parsing response from usbhidtool');
 
                 } else {
 
@@ -213,13 +218,13 @@ function writeToDevice(buffer, callback) {
 
 function makeResponseHandler(messageType, convert, callback) {
 
-    var handler = function (err, data) {
+    const handler = function (err, data) {
         if (err) {
             callback(err);
         } else if (data === null) {
             callback(null, null);
         } else if (data[0] !== messageType) {
-            callback(new Error('Incorrect message type from AudioMoth device'));
+            callback('Incorrect message type from AudioMoth device');
         } else {
             callback(null, convert(data, 1));
         }
@@ -231,7 +236,7 @@ function makeResponseHandler(messageType, convert, callback) {
 
 exports.getTime = function (callback) {
 
-    var buffer = [0x00, USB_MSG_TYPE_GET_TIME];
+    const buffer = [0x00, USB_MSG_TYPE_GET_TIME];
 
     writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_TIME, convertFourBytesFromBufferToDate, callback));
 
@@ -239,7 +244,7 @@ exports.getTime = function (callback) {
 
 exports.setTime = function (date, callback) {
 
-    var buffer = [0x00, USB_MSG_TYPE_SET_TIME, 0x00, 0x00, 0x00, 0x00];
+    const buffer = [0x00, USB_MSG_TYPE_SET_TIME, 0x00, 0x00, 0x00, 0x00];
 
     convertDateToFourBytesInBuffer(buffer, 2, date);
 
@@ -249,7 +254,7 @@ exports.setTime = function (date, callback) {
 
 exports.getID = function (callback) {
 
-    var buffer = [0x00, USB_MSG_TYPE_GET_UID];
+    const buffer = [0x00, USB_MSG_TYPE_GET_UID];
 
     writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_UID, convertEightBytesFromBufferToID, callback));
 
@@ -257,7 +262,7 @@ exports.getID = function (callback) {
 
 exports.getBatteryState = function (callback) {
 
-    var buffer = [0x00, USB_MSG_TYPE_GET_BATTERY];
+    const buffer = [0x00, USB_MSG_TYPE_GET_BATTERY];
 
     writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_BATTERY, convertOneByteFromBufferToBatteryState, callback));
 
@@ -265,7 +270,7 @@ exports.getBatteryState = function (callback) {
 
 exports.getFirmwareVersion = function (callback) {
 
-    var buffer = [0x00, USB_MSG_TYPE_GET_FIRMWARE_VERSION];
+    const buffer = [0x00, USB_MSG_TYPE_GET_FIRMWARE_VERSION];
 
     writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_FIRMWARE_VERSION, convertThreeBytesFromBufferToFirmwareVersion, callback));
 
@@ -273,7 +278,7 @@ exports.getFirmwareVersion = function (callback) {
 
 exports.getFirmwareDescription = function (callback) {
 
-    var buffer = [0x00, USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION];
+    const buffer = [0x00, USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION];
 
     writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_FIRMWARE_DESCRIPTION, convertBytesFromBufferToFirmwareDescription, callback));
 
@@ -281,40 +286,90 @@ exports.getFirmwareDescription = function (callback) {
 
 exports.getPacket = function (callback) {
 
-    var buffer = [0x00, USB_MSG_TYPE_GET_APP_PACKET];
+    const buffer = [0x00, USB_MSG_TYPE_GET_APP_PACKET];
 
-    writeToDevice(buffer, callback);
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_GET_APP_PACKET, (buffer) => buffer, callback));
 
 };
 
 exports.setPacket = function (packet, callback) {
 
-    var i, buffer, packet_length;
+    const packet_length = Math.min(packet.length, 62);
 
-    packet_length = Math.min(packet.length, 62);
+    const buffer = [0x00, USB_MSG_TYPE_SET_APP_PACKET];
 
-    buffer = [0x00, USB_MSG_TYPE_SET_APP_PACKET];
-
-    for (i = 0; i < packet_length; i += 1) {
+    for (let i = 0; i < packet_length; i += 1) {
         buffer.push(packet[i]);
     }
 
-    writeToDevice(buffer, callback);
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_SET_APP_PACKET, (buffer) => buffer, callback));
+
+};
+
+exports.queryBootloader = function (callback) {
+
+    const buffer = [0x00, USB_MSG_TYPE_QUERY_SERIAL_BOOTLOADER];
+
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_QUERY_SERIAL_BOOTLOADER, convertOneByteFromBufferToBoolean, callback));
 
 };
 
 exports.switchToBootloader = function (callback) {
 
-    var buffer = [0x00, USB_MSG_TYPE_SWITCH_TO_BOOTLOADER];
+    const buffer = [0x00, USB_MSG_TYPE_ENTER_SERIAL_BOOTLOADER];
 
-    writeToDevice(buffer, callback);
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_ENTER_SERIAL_BOOTLOADER, convertOneByteFromBufferToBoolean, callback));
+
+};
+
+exports.queryUSBHIDBootloader = function (callback) {     
+    
+    const buffer = [0x00, USB_MSG_TYPE_QUERY_USBHID_BOOTLOADER];
+
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_QUERY_USBHID_BOOTLOADER, convertOneByteFromBufferToBoolean, callback));
+
+};
+
+function makeBufferForUSBHIDBootloader(packet) {
+
+    const packet_length = Math.min(packet.length, AUDIOMOTH_PACKETSIZE);
+
+    const buffer = [0x00, USB_MSG_TYPE_ENTER_USBHID_BOOTLOADER];
+
+    for (let i = 0; i < packet_length; i += 1) buffer.push(packet[i] & 0xFF);
+
+    while (buffer.length < FULL_USB_HID_PACKETSIZE) buffer.push(0x00);
+
+    return buffer;
 
 }
 
-exports.queryBootloader = function (callback) {
+exports.sendPacketToUSBHIDBootloader = function (packet, callback) { 
 
-    var buffer = [0x00, USB_MSG_TYPE_QUERY_BOOTLOADER];
+    const buffer = makeBufferForUSBHIDBootloader(packet);
 
-    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_QUERY_BOOTLOADER, convertOneByteFromBufferToBootloaderQuery, callback));
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_ENTER_USBHID_BOOTLOADER, (buffer) => buffer, callback));
+
+};
+
+exports.sendMultiplePacketsToUSBHIDBootloader = function (packets, callback) { 
+
+    const buffers = [];
+
+    for (let i = 0; i < packets.length; i += 1) {
+
+        buffers.push(makeBufferForUSBHIDBootloader(packets[i]));
+
+    }
+
+    let buffer = [];
+
+    for (let i = 0; i < buffers.length; i += 1) {
+
+        buffer = buffer.concat(buffers[i]);
+    
+    }
+
+    writeToDevice(buffer, makeResponseHandler(USB_MSG_TYPE_ENTER_USBHID_BOOTLOADER, (buffer) => buffer, callback));
 
 };

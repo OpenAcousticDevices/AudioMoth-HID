@@ -136,6 +136,38 @@ audiomoth.switchToBootloader(function (err, packet) {
 });
 ```
 
+---
+
+Query AudioMoth to see if it supports the USB HID bootloader:
+
+```javascript
+audiomoth.queryUSBHIDBootloader(function (err, supportsUSBHIDBootloader) {
+    if (supportsUSBHIDBootloader) {
+        console.log("Attached device's firmware supports the USB HID bootloader.");
+    } else {
+        console.error("Attached device's firmware does not support the USB HID bootloader.");
+    }
+});
+```
+
+Send single USB HID packet:
+
+```javascript
+audiomoth.sendPacketToUSBHIDBootloader(function (err, packet) {
+	console.log("Data returned from USB HID bootloader: " + packet);
+	audiomoth.convertFourBytesFromBufferToDate(packet, 1);
+});
+```
+
+Send multiple USB HID packets:
+
+```javascript
+audiomoth.sendMultiplePacketsToUSBHIDBootloader(function (err, packet) {
+	console.log("Data returned from USB HID bootloader: " + packet);
+	audiomoth.convertFourBytesFromBufferToDate(packet, 1);
+});
+```
+
 ### Linux ###
 
 The module will work as is on macOS and Windows. However, Linux prevents USB HID devices from being writable by default. This can be fixed by navigating to /lib/udev/rules.d/ and adding a file called 99-audiomoth.rules. The content of this file should by:
