@@ -155,7 +155,6 @@ Send single USB HID packet:
 ```javascript
 audiomoth.sendPacketToUSBHIDBootloader(function (err, packet) {
 	console.log("Data returned from USB HID bootloader: " + packet);
-	audiomoth.convertFourBytesFromBufferToDate(packet, 1);
 });
 ```
 
@@ -164,7 +163,6 @@ Send multiple USB HID packets:
 ```javascript
 audiomoth.sendMultiplePacketsToUSBHIDBootloader(function (err, packet) {
 	console.log("Data returned from USB HID bootloader: " + packet);
-	audiomoth.convertFourBytesFromBufferToDate(packet, 1);
 });
 ```
 
