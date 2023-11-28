@@ -85,7 +85,6 @@ Get application packet set in AudioMoth firmware:
 ```javascript
 audiomoth.getPacket(function (err, packet) {
 	console.log("Data returned from application specific packet: " + packet);
-	audiomoth.convertFourBytesFromBufferToDate(packet, 1);
 });
 ```
 
