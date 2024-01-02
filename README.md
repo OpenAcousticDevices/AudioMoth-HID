@@ -124,13 +124,11 @@ audiomoth.queryBootloader(function (err, supportsBootloaderSwitch) {
 Switch AudioMoth to bootloader for flashing:
 
 ```javascript
-audiomoth.switchToBootloader(function (err, packet) {
-    if (packet[0] === 0x0A) {
-        if (packet[1] === 0x01) {
-            console.log("Attached device switching to bootloader.");
-        } else {
-            console.error("Attached device's firmware does not support bootloader switching over HID.");
-        }
+audiomoth.switchToBootloader(function (err, switchedToBootloader) {
+    if (switchedToBootloader) {
+        console.log("Attached device will switch to bootloader.");
+    } else {
+        console.error("Attached device's firmware does not support bootloader switching over HID.");
     }
 });
 ```
