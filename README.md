@@ -150,7 +150,7 @@ audiomoth.queryUSBHIDBootloader(function (err, supportsUSBHIDBootloader) {
 Send single USB HID packet:
 
 ```javascript
-audiomoth.sendPacketToUSBHIDBootloader(function (err, packet) {
+audiomoth.sendPacketToUSBHIDBootloader(packet, function (err, packet) {
 	console.log("Data returned from USB HID bootloader: " + packet);
 });
 ```
@@ -158,7 +158,7 @@ audiomoth.sendPacketToUSBHIDBootloader(function (err, packet) {
 Send multiple USB HID packets:
 
 ```javascript
-audiomoth.sendMultiplePacketsToUSBHIDBootloader(function (err, packet) {
+audiomoth.sendMultiplePacketsToUSBHIDBootloader(packets, function (err, packet) {
 	console.log("Data returned from USB HID bootloader: " + packet);
 });
 ```
